@@ -1,17 +1,17 @@
 {
-	"pluginName": "Screenshot",
-	"pluginDescription": "Different kinds of screenshots",
-	"pluginReadMore": "This action lets you take different kinds of screenshots.",
+	"pluginName": "Zoom",
+	"pluginDescription": "Toggle zoom mute",
+	"pluginReadMore": "This action lets you toggle zoom app's mute on macOS.",
 	"protocolVersion": 1,
 	"actions":
 	[
 		{
-			"actionName": "Interactive",
-			"fileName": "interactiveScreenshot.sh",
+			"actionName": "Toggle Mute Self",
+			"fileName": "mute-self.sh"
 		},
 		{
-			"actionName": "Whole desktop",
-			"fileName": "screenshot.sh",
+			"actionName": "Mute All But Host",
+			"fileName": "mute-all.sh"
 		}
 	]
 }

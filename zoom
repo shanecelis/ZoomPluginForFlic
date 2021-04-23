@@ -1,0 +1,141 @@
+#!/usr/bin/osascript
+# zoom
+#
+# This script is based off of Andy Scott's gist.
+# I added the ability to mute and dispatch subcommands.
+# -Shane Celis
+#
+# https://gist.github.com/andyscott/c6a98d9d64cead110708
+
+# usage: zoom open <room-number> [room-password] [--name=NAME]
+#        zoom mute [all]
+
+global zoom
+
+on split(theString, theDelimiter)
+	set oldDelimiters to AppleScript's text item delimiters
+	set AppleScript's text item delimiters to theDelimiter
+	set theArray to every text item of theString
+	set AppleScript's text item delimiters to oldDelimiters
+	return theArray
+end split
+
+on mute(allP)
+	tell application zoom to activate
+	tell application "System Events"
+		repeat until visible of process zoom is true
+			# log "waiting for zoom process"
+			delay 0.2
+		end repeat
+		delay 0.1
+		if allP then
+      log "toggle mute all"
+			keystroke "M" using {command down, control down}
+		else
+      log "toggle mute self"
+			keystroke "A" using {command down, shift down}
+		end if
+	end tell
+end mute
+
+on openRoom(argv)
+	set args to {}
+	repeat with arg in argv
+		if (arg as string = "mute") then
+			mute
+			return
+		end if
+		set parts to split(arg, "=")
+		if (count of parts) > 1 then
+			if item 1 of parts is "--name" then
+				set myName to item 2 of parts
+			end if
+		else
+			copy item 1 of parts to end of args
+		end if
+	end repeat
+	
+	try
+		myName
+	on error
+		tell application "System Events"
+			set myName to name of current user
+		end tell
+	end try
+	
+	set roomName to item 1 of args
+	try
+		set roomPassword to item 2 of args
+	end try
+	
+	log "You are " & myName
+	log "Room is " & roomName
+	try
+		log "Password is " & roomPassword
+	end try
+	
+	tell application zoom to activate
+	tell application "System Events"
+		repeat until visible of process zoom is false
+			log "waiting for zoom process"
+			delay 0.2
+			set visible of process zoom to false
+		end repeat
+	end tell
+	
+	tell application "System Events"
+		tell process zoom
+			
+			repeat until window "Join a meeting" exists
+				click menu item "Join Meeting..." of menu "Zoom.us" of menu bar 1
+				
+				log "waiting for join meeting window"
+				delay 0.2
+			end repeat
+			
+			set joinMeeting to window "Join a meeting"
+			set idField to text field 1 of joinMeeting
+			set nameField to text field 2 of joinMeeting
+			set joinButton to button "Join" of joinMeeting
+			
+			set value of idField to roomName
+			set value of nameField to myName
+			click joinButton
+			
+			try
+				roomPassword
+				repeat until window "Join a Meeting" exists
+					log "waiting for password window"
+					delay 0.2
+				end repeat
+				set joinMeeting to window "Join a Meeting"
+				set passwordField to text field 1 of group 1 of group 1 of joinMeeting
+				set joinButton to button "Join" of group 1 of joinMeeting
+				
+				set frontmost to true
+				keystroke "."
+				set value of passwordField to roomPassword
+				click joinButton
+			end try
+			
+		end tell
+	end tell
+	
+end openRoom
+
+on run argv
+set zoom to "zoom.us"
+	if (length of argv) > 0 then
+		set subcommand to item 1 of argv
+		#log "command " & subcommand
+    if subcommand is "mute" then
+      set allP to (length of argv = 2) and (item 2 of argv = "all")
+      mute(allP)
+    else if subcommand is "open" then
+      openRoom(rest of argv)
+    end if
+  else
+    log "Error: no subcommand given. "
+    return
+	end if
+end run
