@@ -1,0 +1,17 @@
+{
+	"pluginName": "Screenshot",
+	"pluginDescription": "Different kinds of screenshots",
+	"pluginReadMore": "This action lets you take different kinds of screenshots.",
+	"protocolVersion": 1,
+	"actions":
+	[
+		{
+			"actionName": "Interactive",
+			"fileName": "interactiveScreenshot.sh",
+		},
+		{
+			"actionName": "Whole desktop",
+			"fileName": "screenshot.sh",
+		}
+	]
+}
